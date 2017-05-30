@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from aimacode.logic import PropKB
 from aimacode.planning import Action
 from aimacode.search import (
@@ -8,8 +10,6 @@ from lp_utils import (
     FluentState, encode_state, decode_state,
 )
 from my_planning_graph import PlanningGraph
-
-from functools import lru_cache
 
 
 class AirCargoProblem(Problem):
@@ -103,8 +103,29 @@ class AirCargoProblem(Problem):
             e.g. 'FTTTFF'
         :return: list of Action objects
         """
-        # TODO implement
+
         possible_actions = []
+
+        # Acquire reference to Knowledge Base
+        kb = PropKB()
+        # Tell Knowledge Base about current state (only positive clauses needed)
+        kb.tell(decode_state(state, self.state_map).pos_sentence())
+
+        # Iterate over positive and negative preconditions required for action to be allowed.
+        # Action is possible when Knowledge Base (with positive clauses) will contain all clauses
+        # from action's positive preconditions list and NOT contain any clauses from negative preconditions list.
+        for action in self.actions_list:
+            is_possible = True
+            for clause in action.precond_pos:
+                if clause not in kb.clauses:
+                    is_possible = False
+                    break
+            for clause in action.precond_neg:
+                if clause in kb.clauses:
+                    is_possible = False
+                    break
+            if is_possible:
+                possible_actions.append(action)
         return possible_actions
 
     def result(self, state: str, action: Action):
