@@ -60,7 +60,19 @@ class AirCargoProblem(Problem):
             :return: list of Action objects
             """
             loads = []
-            # TODO create all load ground actions from the domain Load action
+            # Iterating over all cargoes, planes and airports to fit Load(c, p, a) action schema with all
+            # required effects and preconditions
+            for cargo in self.cargos:
+                for plane in self.planes:
+                    for airport in self.airports:
+                        precond_pos = [expr("At({}, {})".format(cargo, airport)),
+                                       expr("At({}, {})".format(plane, airport))]
+                        precond_neg = []
+                        effect_pos = [expr("In({}, {})".format(cargo, plane))]
+                        effect_neg = [expr("At({}, {})".format(cargo, airport))]
+                        load = Action(expr("Load({}, {}, {})".format(cargo, plane, airport)),
+                                      [precond_pos, precond_neg], [effect_pos, effect_neg])
+                        loads.append(load)
             return loads
 
         def unload_actions():
