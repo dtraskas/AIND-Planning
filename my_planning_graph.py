@@ -105,7 +105,6 @@ class PgNode_s(PgNode):
 class PgNode_a(PgNode):
     """A-type (action) Planning Graph node - inherited from PgNode """
 
-
     def __init__(self, action: Action):
         """A-level Planning Graph node constructor
 
@@ -310,6 +309,25 @@ class PlanningGraph():
         #   set iff all prerequisite literals for the action hold in S0.  This can be accomplished by testing
         #   to see if a proposed PgNode_a has prenodes that are a subset of the previous S level.  Once an
         #   action node is added, it MUST be connected to the S node instances in the appropriate s_level set.
+
+        a_nodes = []
+
+        # Iterate over all available actions
+        for action in self.all_actions:
+            # Create PgNode_a object for each action (it has some nice helper methods for graph creation)
+            a_node = PgNode_a(action)
+            # Check given action's preconditions collection - if it's a subset of fluent state on current level
+            # then action is possible
+            if a_node.prenodes.issubset(self.s_levels[level]):
+                a_nodes.append(a_node)
+                # Update current possible action with preconditions that made this action available (parents)
+                # Update preconditions on current level with new possible action (children)
+                for s_node in self.s_levels[level]:
+                    a_node.parents.add(s_node)
+                    s_node.children.add(a_node)
+
+        # Append created PgNode_a list to action level list
+        self.a_levels.append(a_nodes)
 
     def add_literal_level(self, level):
         """ add an S (literal) level to the Planning Graph
