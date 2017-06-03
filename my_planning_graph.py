@@ -320,10 +320,10 @@ class PlanningGraph():
             # then action is possible
             if a_node.prenodes.issubset(self.s_levels[level]):
                 a_nodes.append(a_node)
-                # Update current possible action with preconditions that made this action available (parents)
-                # Update preconditions on current level with new possible action (children)
                 for s_node in self.s_levels[level]:
+                    # Update current possible action with precondition layer that made this action available (parents)
                     a_node.parents.add(s_node)
+                    # Update preconditions on current level with new possible action (children)
                     s_node.children.add(a_node)
 
         # Append created PgNode_a list to action level list
@@ -346,6 +346,23 @@ class PlanningGraph():
         #   may be "added" to the set without fear of duplication.  However, it is important to then correctly create and connect
         #   all of the new S nodes as children of all the A nodes that could produce them, and likewise add the A nodes to the
         #   parent sets of the S nodes
+
+        # Initialize current level state nodes as set (no duplicates)
+        s_nodes = set()
+
+        # Iterate over action nodes in preceding level
+        for a_node in self.a_levels[level - 1]:
+            # Iterate over each action's effect
+            for s_node in a_node.effnodes:
+                # Add effect to result set
+                s_nodes.add(s_node)
+                # Update current level state (effect) with its action (cause) by updating parents
+                s_node.parents.add(a_node)
+                # Update preceding level action with its effects (children)
+                a_node.children.add(s_node)
+
+        # Append created s_nodes set
+        self.s_levels.append(s_nodes)
 
     def update_a_mutex(self, nodeset):
         """ Determine and update sibling mutual exclusion for A-level nodes
