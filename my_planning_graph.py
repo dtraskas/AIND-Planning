@@ -420,8 +420,26 @@ class PlanningGraph():
         :param node_a2: PgNode_a
         :return: bool
         """
-        # TODO test for Inconsistent Effects between nodes
-        return False
+        is_mutex = False
+        # Extract Action object from graph nodes
+        action_1 = node_a1.action
+        action_2 = node_a2.action
+
+        # Iterate over positive effects of first action.
+        # If one of them is present in second action's negative effects then those two actions are mutually exclusive.
+        for eff_add in action_1.effect_add:
+            if eff_add in action_2.effect_rem:
+                is_mutex = True
+                break
+
+        # Iterate over positive effects of second action.
+        # If one of them is present in first action's negative effects then those two actions are mutually exclusive.
+        for eff_add in action_2.effect_add:
+            if eff_add in action_1.effect_rem:
+                is_mutex = True
+                break
+
+        return is_mutex
 
     def interference_mutex(self, node_a1: PgNode_a, node_a2: PgNode_a) -> bool:
         """
