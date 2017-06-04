@@ -455,8 +455,36 @@ class PlanningGraph():
         :param node_a2: PgNode_a
         :return: bool
         """
-        # TODO test for Interference between nodes
-        return False
+        is_mutex = False
+        # Extract Action object from graph nodes
+        action_1 = node_a1.action
+        action_2 = node_a2.action
+
+        # Check if positive effect of first action is present as negative fluent in second action's preconditions
+        for eff_add in action_1.effect_add:
+            if eff_add in action_2.precond_neg:
+                is_mutex = True
+                break
+
+        # Check if negative effect of first action is present as positive fluent in second action's preconditions
+        for eff_neg in action_1.effect_rem:
+            if eff_neg in action_2.precond_pos:
+                is_mutex = True
+                break
+
+        # Check if positive effect of second action is present as negative fluent in first action's preconditions
+        for eff_add in action_2.effect_add:
+            if eff_add in action_1.precond_neg:
+                is_mutex = True
+                break
+
+        # Check if negative effect of second action is present as positive fluent in first action's preconditions
+        for eff_neg in action_2.effect_rem:
+            if eff_neg in action_1.precond_pos:
+                is_mutex = True
+                break
+
+        return is_mutex
 
     def competing_needs_mutex(self, node_a1: PgNode_a, node_a2: PgNode_a) -> bool:
         """
