@@ -571,7 +571,22 @@ class PlanningGraph():
 
         :return: int
         """
+        # In Planning Graph we need heuristic that will approximate how many moves we got left to reach our goals
         level_sum = 0
-        # TODO implement
-        # for each goal in the problem, determine the level cost, then add them together
+        # Iterate over goals
+        for goal in self.problem.goal:
+            # Wrap each goal into PgNode_s object (many helper methods e. g. for checking equality)
+            goal_node = PgNode_s(goal, True)
+            goal_found = False
+            # Iterate over all fluents (of type PgNode_s) in each state layer
+            for level in range(len(self.s_levels)):
+                for state_node in self.s_levels[level]:
+                    if state_node == goal_node:
+                        # Add cost of the level in which given goal occurs for the FIRST time, then break loop search
+                        # for that goal
+                        level_sum += level
+                        goal_found = True
+                        break
+                if goal_found:
+                    break
         return level_sum
